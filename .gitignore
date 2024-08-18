@@ -1,0 +1,31 @@
+# Binarios compilados
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+price
+
+
+# Archivos de prueba
+*.test
+
+# Archivos de cobertura
+*.out
+
+# Directorios
+/vendor/
+/bin/
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+
+# go.sum puede ser regenerado desde go.mod
+/go.sum
+
+# Archivos de configuración local
+*.local.yml
+*.env
+
