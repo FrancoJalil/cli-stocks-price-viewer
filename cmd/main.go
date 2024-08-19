@@ -24,14 +24,11 @@ func main() {
 		ticket = ticket + ".BA"
 	}
 
-	// Define y aplica estilos
-	style := styles.GetTickerStyle()
-	secondStyle := styles.GetPriceStyle()
+	// Define el estilo para los errores
 	errorStyle := styles.GetErrorStyle()
 
-	// Obtiene el precio actual del ticker
-
-	price, err := api.GetCurrentPrice(ticket)
+	// Obtiene el precio actual y el porcentaje de cambio del ticket
+	price, percentChange, err := api.GetCurrentPrice(ticket)
 	if err != nil {
 		fmt.Println(errorStyle.Render(
 			"Error:", err.Error(),
@@ -39,15 +36,23 @@ func main() {
 		return
 	}
 
-	// Renderiza el ticker estilizado
-	fmt.Print(style.Render(fmt.Sprintf("%s ", strings.ToUpper(ticket))))
+	// Define los estilos para el ticket, el precio y el porcentaje
+	ticketStyle := styles.GetTicketStyle()
+	priceStyle := styles.GetPriceStyle()
+	percentStyle := styles.GetPercentStyle(percentChange)
 
-	// Renderiza el precio con el segundo estilo
+	// Renderiza el ticket estilizado
+	fmt.Print(ticketStyle.Render(fmt.Sprintf("%s ", strings.ToUpper(ticket))))
+
+	// Renderiza el precio con un label y su estilo
 	priceLabel := "USD $"
 	if strings.HasSuffix(ticket, ".BA") {
 		priceLabel = "ARS $"
 	}
-
 	priceStr := fmt.Sprintf("%s%.2f", priceLabel, price)
-	fmt.Println(secondStyle.Render(priceStr))
+	fmt.Print(priceStyle.Render(priceStr))
+
+	// Renderiza el porcentaje de cambio con su estilo
+	percentStr := fmt.Sprintf("%.2f%%", percentChange)
+	fmt.Println(percentStyle.Render(percentStr))
 }

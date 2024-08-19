@@ -42,12 +42,12 @@ price <TICKER> [x]
 
 ```sh
 $ price AAPL
->> AAPL ARS $1000.00
+>> AAPL ARS $1000.00 -2%
 ```
 
 ```sh
 $ price AAPL x
->> AAPL USD $100.00
+>> AAPL USD $100.00 -2%
 ```
 
 El programa obtendrá el precio actual de la acción AAPL y lo mostrará en la consola.

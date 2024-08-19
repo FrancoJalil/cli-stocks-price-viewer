@@ -13,6 +13,7 @@ const baseURL = "https://query1.finance.yahoo.com/v8/finance/chart/"
 // Estructuras para deserializar el JSON
 type ChartMeta struct {
 	RegularMarketPrice float64 `json:"regularMarketPrice"`
+	ChartPreviousClose float64 `json:"chartPreviousClose"`
 }
 
 type Result struct {
@@ -27,7 +28,7 @@ type Data struct {
 	Chart Chart `json:"chart"`
 }
 
-func GetCurrentPrice(ticket string) (float64, error) {
+func GetCurrentPrice(ticket string) (float64, percentageChange float64, err error) {
 	// ticker uppercase y construye la URL
 	ticket = strings.ToUpper(ticket)
 	url := baseURL + ticket + "?events=capitalGain%7Cdiv%7Csplit&formatted=true&includeAdjustedClose=true&interval=1d&symbol=" + ticket + "&userYfid=true&range=1d&lang=en-US&region=US"
@@ -35,7 +36,7 @@ func GetCurrentPrice(ticket string) (float64, error) {
 	// Crea una nueva solicitud con un User-Agent personalizado
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36")
 
@@ -43,27 +44,34 @@ func GetCurrentPrice(ticket string) (float64, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	defer resp.Body.Close()
 
 	// Lee el cuerpo de la respuesta
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	// Deserializa los datos JSON
 	var data Data
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	// Retorna el precio actual
+	// Retorna el precio actual y el porcentaje
 	if len(data.Chart.Result) > 0 {
-		return data.Chart.Result[0].Meta.RegularMarketPrice, nil
-	}
+		currentPrice := data.Chart.Result[0].Meta.RegularMarketPrice
+		previousPrice := data.Chart.Result[0].Meta.ChartPreviousClose
 
-	return 0, fmt.Errorf("no se encontró el ticket")
+		percentageChange = 0.0
+		if previousPrice != currentPrice {
+			percentageChange = ((currentPrice - previousPrice) / previousPrice) * 100
+		}
+
+		return currentPrice, percentageChange, nil
+	}
+	return 0, 0, fmt.Errorf("no se encontró el ticket")
 }
